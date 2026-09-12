@@ -20,13 +20,15 @@ const ProductDetailPage = () => {
   const { showToast, products, user, isInWishlist } = useStore();
   const { addToCart, toggleWishlist } = CustomerUtils();
 
+  const selectedProduct = slug ? findProductBySlug(products, slug) : null;
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [selectedWeight, setSelectedWeight] = useState<string>('250g');
-
-  const selectedProduct = slug ? findProductBySlug(products, slug) : null;
+  const [selectedWeight, setSelectedWeight] = useState<string>(() =>
+    getDefaultInventorySelection(selectedProduct ?? undefined),
+  );
 
   const isAdmin = user.role === 'admin';
 
@@ -54,8 +56,8 @@ const ProductDetailPage = () => {
 
   const discount = product?.originalPrice
     ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100,
-      )
+      ((product.originalPrice - product.price) / product.originalPrice) * 100,
+    )
     : 0;
   const inventoryState = product ? getProductInventoryState(product) : null;
   const selectedInventoryOption = getSelectedWeightOption(
@@ -96,8 +98,8 @@ const ProductDetailPage = () => {
     () =>
       product
         ? [product.image, ...(product.images || [])]
-            .filter(Boolean)
-            .filter((v, i, a) => a.indexOf(v) === i)
+          .filter(Boolean)
+          .filter((v, i, a) => a.indexOf(v) === i)
         : [],
     [product],
   );
@@ -203,7 +205,7 @@ const ProductDetailPage = () => {
               <img
                 src={galleryImages[selectedImage] || product.image}
                 alt={product.name}
-                className="w-full h-auto max-h-[75vh] object-contain"
+                className="w-full h-auto max-h-[80vh] object-contain"
               />
 
               {/* Progress line + dot indicators */}
@@ -215,11 +217,10 @@ const ProductDetailPage = () => {
                         key={idx}
                         onClick={() => setSelectedImage(idx)}
                         aria-label={`Go to image ${idx + 1}`}
-                        className={`w-3 h-3 rounded-full transition-transform focus:outline-none ${
-                          selectedImage === idx
-                            ? 'scale-125 bg-(--color-accent) border border-(--color-accent)'
-                            : 'scale-100 bg-(--color-border)'
-                        } ${indexPulse && selectedImage === idx ? 'animate-pulse' : ''}`}
+                        className={`w-3 h-3 rounded-full transition-transform focus:outline-none ${selectedImage === idx
+                          ? 'scale-125 bg-(--color-accent) border border-(--color-accent)'
+                          : 'scale-100 bg-(--color-border)'
+                          } ${indexPulse && selectedImage === idx ? 'animate-pulse' : ''}`}
                       />
                     ))}
                   </div>
@@ -258,11 +259,10 @@ const ProductDetailPage = () => {
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden transition hover:border-(--color-accent) ${
-                      selectedImage === idx
-                        ? 'border-(--color-accent) ring-2 ring-(--color-accent)/30'
-                        : 'border-(--color-border)'
-                    }`}
+                    className={`shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden transition hover:border-(--color-accent) ${selectedImage === idx
+                      ? 'border-(--color-accent) ring-2 ring-(--color-accent)/30'
+                      : 'border-(--color-border)'
+                      }`}
                   >
                     <img
                       src={img}
@@ -295,11 +295,10 @@ const ProductDetailPage = () => {
                     onClick={() =>
                       !isAdmin ? toggleWishlist(product._id) : null
                     }
-                    className={`p-3 rounded-full transition border-2 ${
-                      isInWishlist(product._id)
-                        ? 'bg-(--color-accent) text-(--color-primary) border-(--color-accent)'
-                        : 'bg-(--color-surface) text-(--color-primary) border-(--color-border) hover:border-(--color-accent)'
-                    }`}
+                    className={`p-3 rounded-full transition border-2 ${isInWishlist(product._id)
+                      ? 'bg-(--color-accent) text-(--color-primary) border-(--color-accent)'
+                      : 'bg-(--color-surface) text-(--color-primary) border-(--color-border) hover:border-(--color-accent)'
+                      }`}
                   >
                     <FiHeart
                       size={20}
@@ -322,11 +321,11 @@ const ProductDetailPage = () => {
             <div className="py-6 border-b-2 border-(--color-border)">
               <div className="flex items-center gap-4">
                 <div className="text-4xl font-bold text-(--color-accent)">
-                  ₹{selectedInventoryOption?.price ?? product.price}
+                  ₹{selectedInventoryOption?.price ?? product.price}/-
                 </div>
                 {selectedInventoryOption?.originalPrice && (
                   <div className="text-lg text-(--color-muted) line-through">
-                    ₹{selectedInventoryOption.originalPrice}
+                    ₹{selectedInventoryOption.originalPrice}/-
                   </div>
                 )}
                 {product.gstIncluded && (
@@ -341,24 +340,9 @@ const ProductDetailPage = () => {
               </p>
             </div>
 
-            {/* Product Description */}
-            <div className="py-6 border-b-2 border-(--color-border)">
-              {isRichHtmlEmpty(sanitizeRichHtml(product.description || '')) ? (
-                <p className="text-(--color-muted) leading-relaxed">
-                  {product.description}
-                </p>
-              ) : (
-                <div
-                  className="legal-rich-text text-(--color-muted)"
-                  dangerouslySetInnerHTML={{
-                    __html: sanitizeRichHtml(product.description || ''),
-                  }}
-                />
-              )}
-            </div>
 
             {/* Weight/Quantity Selection */}
-            <div className="py-6 border-b-2 border-(--color-border) space-y-4">
+            <div className="py-4 border-b-2 border-(--color-border) space-y-1">
               {product.inventoryType === 'weight' && (
                 <div>
                   <div className="flex gap-3 flex-wrap">
@@ -371,13 +355,12 @@ const ProductDetailPage = () => {
                           onClick={() =>
                             setSelectedWeight(String(option.value))
                           }
-                          className={`px-4 py-2 rounded-lg border-2 font-medium transition ${
-                            selectedWeight === String(option.value)
-                              ? 'border-(--color-accent) bg-(--color-accent) text-(--color-primary)'
-                              : 'border-(--color-border) text-(--color-text) hover:border-(--color-accent) hover:bg-(--color-surface-alt)'
-                          }`}
+                          className={`px-4 py-2 rounded-lg border-2 font-medium transition ${selectedWeight === String(option.value)
+                            ? 'border-(--color-accent) bg-(--color-accent) text-(--color-primary)'
+                            : 'border-(--color-border) text-(--color-text) hover:border-(--color-accent) hover:bg-(--color-surface-alt)'
+                            }`}
                         >
-                          {label}
+                          {label} g
                         </button>
                       );
                     })}
@@ -386,7 +369,7 @@ const ProductDetailPage = () => {
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-(--color-primary) mb-3">
+                <label className="block pt-4 text-sm font-semibold text-(--color-primary) mb-3">
                   Quantity
                 </label>
                 <div className="flex items-center border-2 border-(--color-border) rounded-lg w-fit">
@@ -410,7 +393,7 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-8 space-y-3">
+            <div className="pt-4 space-y-3">
               <button
                 onClick={handleAddToCart}
                 disabled={!product.inStock}
@@ -425,15 +408,23 @@ const ProductDetailPage = () => {
                 Continue Shopping
               </button>
             </div>
-
-            {/* Additional Info */}
-            <div className="mt-8 pt-6 border-t-2 border-(--color-border) flex justify-between items-center gap-6 text-center">
-              <p className="text-xs text-(--color-accent) font-bold uppercase tracking-widest">
-                Delivery Time
-              </p>
-              <p className="font-bold text-(--color-primary) mt-2">2-4 Hours</p>
-            </div>
           </div>
+        </div>
+
+        {/* Product Description */}
+        <div className="py-6 border-b-2 border-(--color-border)">
+          {isRichHtmlEmpty(sanitizeRichHtml(product.description || '')) ? (
+            <p className="text-(--color-muted) leading-relaxed">
+              {product.description}
+            </p>
+          ) : (
+            <div
+              className="legal-rich-text text-(--color-muted)"
+              dangerouslySetInnerHTML={{
+                __html: sanitizeRichHtml(product.description || ''),
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

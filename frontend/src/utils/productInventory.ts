@@ -73,7 +73,7 @@ export const normalizeProductInventory = (product?: Product) => {
 export const getAvailableWeightOption = (
   product?: Product,
 ): ProductWeightPriceOption | null =>
-  product ? normalizeProductWeights(product)[0] ?? null : null;
+  product ? getWeightOptions(product)[0] ?? null : null;
 
 export const getInventoryDisplayLabel = (product?: Product) => {
   const option = getAvailableWeightOption(product);
@@ -118,7 +118,7 @@ export const getSelectedWeightOption = (
   product: any,
   selectedValue?: string,
 ): ProductWeightPriceOption | null => {
-  const options = normalizeProductWeights(product);
+  const options = getWeightOptions(product);
   if (!options.length) return null;
 
   if (product?.inventoryType === 'unit') return options[0];
@@ -138,7 +138,7 @@ export const getSelectedWeightOption = (
     );
   });
 
-  return match ?? null;
+  return match ?? options[0];
 };
 
 export const getProductPrice = (product: Product): number => {
@@ -160,7 +160,10 @@ export const getProductOriginalPrice = (product: Product): number | undefined =>
 };
 
 export const getWeightOptions = (product?: Product): ProductWeightPriceOption[] =>
-  normalizeProductWeights(product);
+  [...normalizeProductWeights(product)].sort((a, b) => {
+    if (a.value !== b.value) return a.value - b.value;
+    return a.unit.localeCompare(b.unit);
+  });
 
 export const getOptionPrice = (
   option: ProductWeightPriceOption | null,

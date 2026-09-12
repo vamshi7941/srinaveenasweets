@@ -73,10 +73,10 @@ const Header = () => {
       isCat: true,
       subcategories: [],
     },
-    ...parentCategories.slice(0, 4),
+    ...parentCategories.slice(0, 6),
   ];
 
-  const overflowCategories = parentCategories.slice(4);
+  const overflowCategories = parentCategories.slice(6);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

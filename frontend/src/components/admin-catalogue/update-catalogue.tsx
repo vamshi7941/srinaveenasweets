@@ -587,6 +587,7 @@ const UpdateCatalogue = ({
                             <input
                               type="number"
                               min="0"
+                              step={50}
                               value={option.value}
                               onChange={(e) =>
                                 updateWeightOption(

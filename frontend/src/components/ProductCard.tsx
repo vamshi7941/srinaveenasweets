@@ -427,11 +427,11 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto flex items-baseline justify-between gap-2 border-t border-(--color-border) pt-2.5">
           <div>
             <span className="font-display text-base font-bold text-(--color-primary-dark) sm:text-lg lg:text-xl">
-              ₹{displayPrice.toLocaleString('en-IN')}
+              ₹{displayPrice.toLocaleString('en-IN')}/-
             </span>
             {displayOriginalPrice && (
               <span className="ml-2 text-xs text-(--color-muted) line-through sm:text-sm">
-                ₹{displayOriginalPrice.toLocaleString('en-IN')}
+                ₹{displayOriginalPrice.toLocaleString('en-IN')}/-
               </span>
             )}
             {product.gstIncluded && (
